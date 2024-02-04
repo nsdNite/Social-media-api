@@ -4,7 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from social_media.models import Profile
-from social_media.serializers import ProfileListSerializer, ProfileDetailSerializer, ProfileSerializer, ProfilePicSerializer
+from social_media.serializers import ProfileListSerializer, ProfileDetailSerializer, ProfileSerializer, \
+    ProfilePicSerializer
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -37,3 +38,15 @@ class ProfileViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="follow",
+    )
+    def follow_profile(self, request, pk=None):
+        profile_to_follow = self.get_object()
+        request_user_profile = self.request.user.profile
+        request_user_profile.follow(profile_to_follow.user)
+
+        return Response({'detail': 'Successfully followed.'}, status=status.HTTP_200_OK)

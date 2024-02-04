@@ -14,9 +14,6 @@ class Follow(models.Model):
     class Meta:
         unique_together = ("follower", "followed")
 
-    def __str__(self):
-        return f"{self.follower} follows {self.followed}"
-
 
 def profile_pic_file_path(instance, filename):
     _, extension = os.path.splitext(filename)
@@ -35,6 +32,14 @@ class Profile(models.Model):
 
     class Meta:
         ordering = ["date_joined"]
+
+    def follow(self, other_user):
+        follow_obj, created = Follow.objects.get_or_create(
+            follower=self.user,
+            followed=other_user,
+        )
+
+        return follow_obj
 
     def __str__(self):
         return self.displayed_name

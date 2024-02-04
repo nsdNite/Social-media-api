@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from social_media.models import Profile
+from social_media.models import Profile, Follow
 
 from user.serializers import UserSerializer
 
@@ -27,6 +27,26 @@ class ProfileSerializer(serializers.ModelSerializer):
         )
 
 
+class FollowingSerializer(serializers.ModelSerializer):
+    following = serializers.CharField(source='followed.profile.displayed_name', read_only=True)
+
+    class Meta:
+        model = Follow
+        fields = (
+            "following",
+        )
+
+
+class FollowersSerializer(serializers.ModelSerializer):
+    follower = serializers.CharField(source='follower.profile.displayed_name', read_only=True)
+
+    class Meta:
+        model = Follow
+        fields = (
+            "follower",
+        )
+
+
 class ProfileDetailSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     following = serializers.SerializerMethodField()
@@ -47,12 +67,12 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
         )
 
     def get_following(self, obj):
-        following_users = obj.user.following.all()
-        return ProfileSerializer(following_users, many=True).data
+        following_profiles = obj.user.following.all()
+        return FollowingSerializer(following_profiles, many=True).data
 
     def get_followers(self, obj):
-        followers_users = obj.user.followers.all()
-        return ProfileSerializer(followers_users, many=True).data
+        followers_profiles = obj.user.followers.all()
+        return FollowersSerializer(followers_profiles, many=True).data
 
 
 class ProfileListSerializer(serializers.ModelSerializer):
