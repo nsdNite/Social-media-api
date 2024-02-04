@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from social_media.models import Profile
-from social_media_service import settings
 
 from user.serializers import UserSerializer
 

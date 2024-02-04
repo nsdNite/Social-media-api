@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from social_media.models import Profile
@@ -21,6 +22,11 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
         return ProfileSerializer
 
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="upload-image",
+    )
     def upload_image(self, request, pk=None):
         """Endpoint for uploading image to specific movie"""
         profile = self.get_object()
