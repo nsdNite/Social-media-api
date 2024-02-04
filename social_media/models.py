@@ -27,7 +27,7 @@ def profile_pic_file_path(instance, filename):
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    displayed_name = models.CharField(max_length=60)
+    displayed_name = models.CharField(max_length=60, unique=True)
     bio = models.TextField(max_length=500, blank=True)
     profile_pic = models.ImageField(null=True, upload_to=profile_pic_file_path)
     date_joined = models.DateTimeField(auto_now_add=True)

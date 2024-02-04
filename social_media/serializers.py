@@ -37,8 +37,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class ProfileDetailSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    following = serializers.StringRelatedField(many=True)
-    followers = serializers.StringRelatedField(many=True)
+    following = serializers.SerializerMethodField()
+    followers = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
@@ -53,6 +53,14 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
             "following",
             "followers"
         )
+
+    def get_following(self, obj):
+        following_users = obj.user.following.all()
+        return [profile.display_name for profile in following_users]
+
+    def get_followers(self, obj):
+        followers_users = obj.user.followers.all()
+        return [profile.display_name for profile in followers_users]
 
 
 class ProfileListSerializer(serializers.ModelSerializer):
