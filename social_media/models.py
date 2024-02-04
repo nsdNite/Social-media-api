@@ -7,6 +7,17 @@ from django.utils.text import slugify
 from social_media_service import settings
 
 
+class Follow(models.Model):
+    follower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="following")
+    followed = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="followers")
+
+    class Meta:
+        unique_together = ("follower", "followed")
+
+    def __str__(self):
+        return f"{self.follower} follows {self.followed}"
+
+
 def profile_pic_file_path(instance, filename):
     _, extension = os.path.splitext(filename)
     filename = f"{slugify(instance.title)}-{uuid.uuid4()}{extension}"

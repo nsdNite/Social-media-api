@@ -37,6 +37,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class ProfileDetailSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    following = serializers.StringRelatedField(many=True)
+    followers = serializers.StringRelatedField(many=True)
 
     class Meta:
         model = Profile
@@ -48,15 +50,28 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
             "profile_pic",
             "date_joined",
             "date_of_birth",
+            "following",
+            "followers"
         )
 
 
 class ProfileListSerializer(serializers.ModelSerializer):
+    following_count = serializers.SerializerMethodField()
+    followers_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Profile
         fields = (
             "id",
             "displayed_name",
             "profile_pic",
-            "date_joined"
+            "date_joined",
+            "following_count",
+            "followers_count",
         )
+
+    def get_following_count(self, obj):
+        return obj.following.count()
+
+    def get_followers_count(self, obj):
+        return obj.user.followers.count()
