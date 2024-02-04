@@ -3,14 +3,7 @@ from rest_framework import serializers
 from social_media.models import Profile
 from social_media_service import settings
 
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = settings.AUTH_USER_MODEL
-        fields = (
-            "username",
-            "email",
-        )
+from user.serializers import UserSerializer
 
 
 class ProfilePicSerializer(serializers.ModelSerializer):
@@ -51,16 +44,16 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
             "date_joined",
             "date_of_birth",
             "following",
-            "followers"
+            "followers",
         )
 
     def get_following(self, obj):
         following_users = obj.user.following.all()
-        return [profile.display_name for profile in following_users]
+        return ProfileSerializer(following_users, many=True).data
 
     def get_followers(self, obj):
         followers_users = obj.user.followers.all()
-        return [profile.display_name for profile in followers_users]
+        return ProfileSerializer(followers_users, many=True).data
 
 
 class ProfileListSerializer(serializers.ModelSerializer):
@@ -79,7 +72,7 @@ class ProfileListSerializer(serializers.ModelSerializer):
         )
 
     def get_following_count(self, obj):
-        return obj.following.count()
+        return obj.user.following.count()
 
     def get_followers_count(self, obj):
         return obj.user.followers.count()
