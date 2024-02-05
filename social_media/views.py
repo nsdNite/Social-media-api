@@ -85,6 +85,16 @@ class ProfileViewSet(viewsets.ModelViewSet):
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
 
+    def get_queryset(self):
+        """Retrieve post by hashtag"""
+        queryset = Post.objects.all()
+        hashtag = self.request.query_params.get("hashtag", None)
+
+        if hashtag:
+            queryset = queryset.filter(content__icontains=f"{hashtag}")
+
+        return queryset
+
     def get_serializer_class(self):
         if self.action == "list":
             return PostListSerializer
