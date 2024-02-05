@@ -1,11 +1,10 @@
-from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from social_media.models import Profile, Follow
+from social_media.models import Profile, Follow, Post
 from social_media.serializers import ProfileListSerializer, ProfileDetailSerializer, ProfileSerializer, \
-    ProfilePicSerializer
+    ProfilePicSerializer, PostSerializer, PostListSerializer, PostDetailSerializer, PostMediaSerializer
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -55,6 +54,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
         url_path="follow",
     )
     def follow_profile(self, request, pk=None):
+        """Endpoint for following user"""
         profile_to_follow = self.get_object()
         request_user_profile = self.request.user.profile
         request_user_profile.follow(profile_to_follow.user)
@@ -67,6 +67,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
         url_path="unfollow",
     )
     def unfollow_profile(self, request, pk=None):
+        """Endpoint for unfollowing user"""
         profile_to_unfollow = self.get_object()
         request_user_profile = self.request.user.profile
 
@@ -79,3 +80,33 @@ class ProfileViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Successfully unfollowed.'}, status=status.HTTP_200_OK)
         except Follow.DoesNotExist:
             return Response({'detail': 'You are not following this profile.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return PostListSerializer
+        if self.action == "retrieve":
+            return PostDetailSerializer
+        if self.action == "upload_media":
+            return PostMediaSerializer
+
+        return PostSerializer
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="upload-media",
+    )
+    def upload_media(self, request, pk=None):
+        """Endpoint for uploading image to specific movie"""
+        profile = self.get_object()
+        serializer = self.get_serializer(profile, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

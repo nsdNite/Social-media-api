@@ -53,32 +53,38 @@ def media_file_path(instance, filename):
 
 
 class Post(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    context = models.TextField
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    content = models.TextField()
     media = models.ImageField(upload_to=media_file_path, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self):
-        return f"Post by {self.profile.displayed_name} on {self.created_at}"
+        return f"Post by {self.user.profile.displayed_name} on {self.created_at}"
 
 
 class Like(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("profile", "post")
+        unique_together = ("user", "post")
 
     def __str__(self):
-        return f"{self.profile.displayed_name} liked {self.post}"
+        return f"{self.user.profile.displayed_name} liked {self.post}"
 
 
 class Comment(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments", null=True, blank=True)
     text = models.TextField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self):
-        return f"Comment by {self.profile.displayed_name} on {self.post}"
+        return f"Comment by {self.user.profile.displayed_name} on {self.post}"

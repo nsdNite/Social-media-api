@@ -1,8 +1,9 @@
 from rest_framework.routers import DefaultRouter
-from social_media.views import ProfileViewSet
+from social_media.views import ProfileViewSet, PostViewSet
 
 router = DefaultRouter()
 router.register(r"profiles", ProfileViewSet)
+router.register("posts", PostViewSet)
 
 urlpatterns = router.urls
 
