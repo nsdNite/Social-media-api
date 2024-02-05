@@ -43,3 +43,42 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.displayed_name
+
+
+def media_file_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    filename = f"{slugify(instance.created_at)}-{uuid.uuid4()}{extension}"
+
+    return os.path.join("uploads/post_media/", filename)
+
+
+class Post(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    context = models.TextField
+    media = models.ImageField(upload_to=media_file_path, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Post by {self.profile.displayed_name} on {self.created_at}"
+
+
+class Like(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("profile", "post")
+
+    def __str__(self):
+        return f"{self.profile.displayed_name} liked {self.post}"
+
+
+class Comment(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    text = models.TextField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.profile.displayed_name} on {self.post}"
