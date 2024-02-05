@@ -3,7 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from social_media.models import Profile
+from social_media.models import Profile, Follow
 from social_media.serializers import ProfileListSerializer, ProfileDetailSerializer, ProfileSerializer, \
     ProfilePicSerializer
 
@@ -50,3 +50,22 @@ class ProfileViewSet(viewsets.ModelViewSet):
         request_user_profile.follow(profile_to_follow.user)
 
         return Response({'detail': 'Successfully followed.'}, status=status.HTTP_200_OK)
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="unfollow",
+    )
+    def unfollow_profile(self, request, pk=None):
+        profile_to_unfollow = self.get_object()
+        request_user_profile = self.request.user.profile
+
+        try:
+            follow_obj = Follow.objects.get(
+                follower=request_user_profile.user,
+                followed=profile_to_unfollow.user,
+            )
+            follow_obj.delete()
+            return Response({'detail': 'Successfully unfollowed.'}, status=status.HTTP_200_OK)
+        except Follow.DoesNotExist:
+            return Response({'detail': 'You are not following this profile.'}, status=status.HTTP_400_BAD_REQUEST)
