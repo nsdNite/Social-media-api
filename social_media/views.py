@@ -23,6 +23,16 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
         return ProfileSerializer
 
+    def get_queryset(self):
+        """Retrieve profile by displayed name"""
+        displayed_name = self.request.query_params.get("displayed_name")
+        queryset = self.queryset
+
+        if displayed_name:
+            queryset = queryset.filter(displayed_name__icontains=displayed_name)
+
+        return queryset.distinct()
+
     @action(
         methods=["POST"],
         detail=True,
