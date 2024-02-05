@@ -110,3 +110,28 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(
+        methods=["GET"],
+        detail=False,  # Not related to a specific post
+        url_path="user-posts",
+    )
+    def user_posts(self, request):
+        """Endpoints for posts made by the current user"""
+        user = self.request.user
+        posts = Post.objects.filter(user=user).order_by('-created_at')
+        serializer = PostListSerializer(posts, many=True)
+        return Response(serializer.data)
+
+    @action(
+        methods=["GET"],
+        detail=False,
+        url_path="following-posts",
+    )
+    def following_posts(self, request):
+        """Endpoint for posts made by users that the current user is following"""
+        user = self.request.user
+        following_users = Follow.objects.filter(follower=user).values_list('followed', flat=True)
+        following_posts = Post.objects.filter(user__in=following_users).order_by('-created_at')
+        serializer = PostListSerializer(following_posts, many=True)
+        return Response(serializer.data)
