@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from social_media.models import Profile, Follow, Post, Like, Comment
-from social_media.permissions import IsOwnerOrReadOnly, IsProfileOwner
+from social_media.permissions import IsOwnerOrReadOnly
 from social_media.serializers import ProfileListSerializer, ProfileDetailSerializer, ProfileSerializer, \
     ProfilePicSerializer, PostSerializer, PostListSerializer, PostDetailSerializer, PostMediaSerializer, \
     CommentSerializer, CommentListSerializer
@@ -128,7 +128,6 @@ class PostViewSet(viewsets.ModelViewSet):
         methods=["POST"],
         detail=True,
         url_path="upload-media",
-        permission_classes=[IsProfileOwner],
     )
     def upload_media(self, request, pk=None):
         """Endpoint for uploading image to specific movie"""
