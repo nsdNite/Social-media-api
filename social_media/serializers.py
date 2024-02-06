@@ -1,8 +1,33 @@
 from rest_framework import serializers
 
-from social_media.models import Profile, Follow, Post, Like
+from social_media.models import Profile, Follow, Post, Like, Comment
 
 from user.serializers import UserSerializer
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = (
+            "id",
+            "user",
+            "post",
+            "text",
+            "created_at"
+        )
+
+
+class CommentListSerializer(serializers.ModelSerializer):
+    profile_name = serializers.CharField(source="user.profile.displayed_name", read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = (
+            "id",
+            "profile_name",
+            "text",
+            "created_at"
+        )
 
 
 class ProfilePicSerializer(serializers.ModelSerializer):

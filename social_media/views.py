@@ -1,11 +1,13 @@
 from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from social_media.models import Profile, Follow, Post, Like
+from social_media.models import Profile, Follow, Post, Like, Comment
 from social_media.serializers import ProfileListSerializer, ProfileDetailSerializer, ProfileSerializer, \
-    ProfilePicSerializer, PostSerializer, PostListSerializer, PostDetailSerializer, PostMediaSerializer
+    ProfilePicSerializer, PostSerializer, PostListSerializer, PostDetailSerializer, PostMediaSerializer, \
+    CommentSerializer, CommentListSerializer
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -191,3 +193,30 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Successfully unliked."}, status=status.HTTP_200_OK)
         except Like.DoesNotExist:
             return Response({"detail": "Post is not liked by the user."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        post_id = self.kwargs.get("post_pk")
+        post = get_object_or_404(Post, pk=post_id)
+        queryset = Comment.objects.filter(post=post)
+        return queryset
+
+    def perform_create(self, serializer):
+        post_id = self.kwargs.get("post_pk")
+        post = get_object_or_404(Post, pk=post_id)
+        serializer.save(user=self.request.user, post=post)
+
+    @action(
+        methods=["GET"],
+        detail=True,
+        url_path="comments"
+    )
+    def list_comments(self, request, pk=None):
+        """Endpoint for retrieving comments on a post"""
+        post = get_object_or_404(Post, pk=pk)
+        comments = post.comments.all()
+        serializer = CommentListSerializer(comments, many=True)
+        return Response(serializer.data)
