@@ -2,9 +2,11 @@ from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from social_media.models import Profile, Follow, Post, Like, Comment
+from social_media.permissions import IsOwnerOrReadOnly, IsProfileOwner
 from social_media.serializers import ProfileListSerializer, ProfileDetailSerializer, ProfileSerializer, \
     ProfilePicSerializer, PostSerializer, PostListSerializer, PostDetailSerializer, PostMediaSerializer, \
     CommentSerializer, CommentListSerializer
@@ -12,6 +14,7 @@ from social_media.serializers import ProfileListSerializer, ProfileDetailSeriali
 
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.all()
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -41,7 +44,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
         url_path="upload-image",
     )
     def upload_image(self, request, pk=None):
-        """Endpoint for uploading image to specific movie"""
+        """Endpoint for uploading profile picture"""
         profile = self.get_object()
         serializer = self.get_serializer(profile, data=request.data)
 
@@ -99,6 +102,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
+    permission_classes = IsAuthenticated
 
     def get_queryset(self):
         """Retrieve post by hashtag"""
@@ -124,6 +128,7 @@ class PostViewSet(viewsets.ModelViewSet):
         methods=["POST"],
         detail=True,
         url_path="upload-media",
+        permission_classes=[IsProfileOwner],
     )
     def upload_media(self, request, pk=None):
         """Endpoint for uploading image to specific movie"""
@@ -197,6 +202,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
         post_id = self.kwargs.get("post_pk")
