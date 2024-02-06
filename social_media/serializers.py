@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from social_media.models import Profile, Follow, Post
+from social_media.models import Profile, Follow, Post, Like
 
 from user.serializers import UserSerializer
 
@@ -163,3 +163,14 @@ class PostListSerializer(serializers.ModelSerializer):
 
     def get_comments_count(self, obj):
         return obj.comments.count()
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = (
+            "id",
+            "user",
+            "post",
+            "created_at"
+        )
