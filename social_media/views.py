@@ -102,7 +102,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
-    permission_classes = IsAuthenticated
+    permission_classes = [IsAuthenticated,]
 
     def get_queryset(self):
         """Retrieve post by hashtag"""
