@@ -44,6 +44,14 @@ class ProfileViewSet(viewsets.ModelViewSet):
         detail=True,
         url_path="upload-image",
     )
+    @extend_schema(
+        responses={
+            status.HTTP_200_OK: {
+                "description": "Successfully uploaded profile picture"
+            }
+        },
+        request=ProfilePicSerializer,
+    )
     def upload_image(self, request, pk=None):
         """Endpoint for uploading profile picture"""
         profile = self.get_object()
@@ -60,6 +68,18 @@ class ProfileViewSet(viewsets.ModelViewSet):
         detail=True,
         url_path="follow",
     )
+    @extend_schema(
+        responses={status.HTTP_200_OK: {"description": "Successfully followed"}},
+        parameters=[
+            OpenApiParameter(
+                name="pk",
+                type=int,
+                description="Primary key of the profile to follow.",
+                required=True,
+                location=OpenApiParameter.PATH,
+            ),
+        ],
+    )
     def follow_profile(self, request, pk=None):
         """Endpoint for following user"""
         profile_to_follow = self.get_object()
@@ -72,6 +92,18 @@ class ProfileViewSet(viewsets.ModelViewSet):
         methods=["POST"],
         detail=True,
         url_path="unfollow",
+    )
+    @extend_schema(
+        responses={status.HTTP_200_OK: {"description": "Successfully unfollowed"}},
+        parameters=[
+            OpenApiParameter(
+                name="pk",
+                type=int,
+                description="Primary key of the profile to unfollow.",
+                required=True,
+                location=OpenApiParameter.PATH,
+            ),
+        ],
     )
     def unfollow_profile(self, request, pk=None):
         """Endpoint for unfollowing user"""
@@ -93,6 +125,17 @@ class ProfileViewSet(viewsets.ModelViewSet):
         detail=True,
         url_path="liked-posts",
     )
+    @extend_schema(
+        responses={200: PostListSerializer(many=True)},
+        parameters=[
+            OpenApiParameter(
+                "Authorization",
+                type=str,
+                location="header",
+                description="JWT Token",
+            ),
+        ]
+    )
     def liked_posts(self, request, pk=None):
         """Endpoint for posts liked by current user"""
         user = self.request.user
@@ -106,13 +149,6 @@ class ProfileViewSet(viewsets.ModelViewSet):
                 "displayed_name",
                 type=str,
                 description="Filter by displayed profile name (example ?displayed_name=User)",
-                required=False,
-            ),
-            OpenApiParameter(
-                "show_themes",
-                type={"type": "list", "items": {"type": "number"}},
-                description="Filter by show theme id"
-                            " (example ?show_themes=1,3)",
                 required=False,
             ),
         ]
@@ -150,8 +186,20 @@ class PostViewSet(viewsets.ModelViewSet):
         detail=True,
         url_path="upload-media",
     )
+    @extend_schema(
+        request=PostMediaSerializer,
+        responses={200: PostMediaSerializer},
+        parameters=[
+            OpenApiParameter(
+                "Authorization",
+                type=str,
+                location="header",
+                description="JWT Token",
+            ),
+        ]
+    )
     def upload_media(self, request, pk=None):
-        """Endpoint for uploading image to specific movie"""
+        """Endpoint for uploading image to post."""
         profile = self.get_object()
         serializer = self.get_serializer(profile, data=request.data)
 
@@ -166,6 +214,17 @@ class PostViewSet(viewsets.ModelViewSet):
         detail=False,  # Not related to a specific post
         url_path="user-posts",
     )
+    @extend_schema(
+        responses={200: PostListSerializer(many=True)},
+        parameters=[
+            OpenApiParameter(
+                "Authorization",
+                type=str,
+                location="header",
+                description="JWT Token",
+            ),
+        ]
+    )
     def user_posts(self, request):
         """Endpoints for posts made by the current user"""
         user = self.request.user
@@ -177,6 +236,17 @@ class PostViewSet(viewsets.ModelViewSet):
         methods=["GET"],
         detail=False,
         url_path="following-posts",
+    )
+    @extend_schema(
+        responses={200: PostListSerializer(many=True)},
+        parameters=[
+            OpenApiParameter(
+                "Authorization",
+                type=str,
+                location="header",
+                description="JWT Token",
+            ),
+        ]
     )
     def following_posts(self, request):
         """Endpoint for posts made by users that the current user is following"""
@@ -190,6 +260,21 @@ class PostViewSet(viewsets.ModelViewSet):
         methods=["POST"],
         detail=True,
         url_path="like",
+    )
+    @extend_schema(
+        responses={
+            200: "Post liked successfully",
+            400: "Bad Request: Post is already liked by the user",
+        },
+        request=None,
+        parameters=[
+            OpenApiParameter(
+                "Authorization",
+                type=str,
+                location="header",
+                description="JWT Token",
+            ),
+        ]
     )
     def like_post(self, request, pk=None):
         """Endpoint for liking a post"""
@@ -206,6 +291,21 @@ class PostViewSet(viewsets.ModelViewSet):
         methods=["POST"],
         detail=True,
         url_path="unlike",
+    )
+    @extend_schema(
+        responses={
+            200: "Successfully unliked",
+            400: "Bad Request: Post is not liked by the user",
+        },
+        request=None,
+        parameters=[
+            OpenApiParameter(
+                "Authorization",
+                type=str,
+                location="header",
+                description="JWT Token",
+            ),
+        ]
     )
     def unlike_post(self, request, pk=None):
         """Endpoint for unliking a post"""
@@ -252,6 +352,17 @@ class CommentViewSet(viewsets.ModelViewSet):
         methods=["GET"],
         detail=True,
         url_path="comments"
+    )
+    @extend_schema(
+        responses={200: CommentListSerializer(many=True)},
+        parameters=[
+            OpenApiParameter(
+                "Authorization",
+                type=str,
+                location="header",
+                description="JWT Token",
+            ),
+        ]
     )
     def list_comments(self, request, pk=None):
         """Endpoint for retrieving comments on a post"""
