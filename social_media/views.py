@@ -123,7 +123,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated, ]
 
     def get_queryset(self):
         """Retrieve post by hashtag"""
@@ -218,6 +218,19 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Successfully unliked."}, status=status.HTTP_200_OK)
         except Like.DoesNotExist:
             return Response({"detail": "Post is not liked by the user."}, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "hashtag",
+                type=str,
+                description="Filter post by hashtag(example ?hashtag=news)",
+                required=False,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
