@@ -1,5 +1,6 @@
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -98,6 +99,26 @@ class ProfileViewSet(viewsets.ModelViewSet):
         liked_posts = Post.objects.filter(likes__user=user).order_by("-created_at")
         serializer = PostListSerializer(liked_posts, many=True)
         return Response(serializer.data)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "displayed_name",
+                type=str,
+                description="Filter by displayed profile name (example ?displayed_name=User)",
+                required=False,
+            ),
+            OpenApiParameter(
+                "show_themes",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by show theme id"
+                            " (example ?show_themes=1,3)",
+                required=False,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class PostViewSet(viewsets.ModelViewSet):
