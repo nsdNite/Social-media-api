@@ -4,3 +4,4 @@
 /uploads/
 db.sqlite3
 /.env
+data
