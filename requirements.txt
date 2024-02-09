@@ -16,3 +16,4 @@ rpds-py==0.17.1
 sqlparse==0.4.4
 tzdata==2023.4
 uritemplate==4.1.1
+python-dotenv~=1.0.0
