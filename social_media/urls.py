@@ -5,9 +5,7 @@ router = DefaultRouter()
 router.register(r"profiles", ProfileViewSet)
 router.register(r"posts", PostViewSet)
 router.register(
-    r"posts/(?P<post_pk>\d+)/comments",
-    CommentViewSet,
-    basename="comments"
+    r"posts/(?P<post_pk>\d+)/comments", CommentViewSet, basename="comments"
 )
 
 

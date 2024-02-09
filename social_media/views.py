@@ -8,9 +8,18 @@ from rest_framework.response import Response
 
 from social_media.models import Profile, Follow, Post, Like, Comment
 from social_media.permissions import IsOwnerOrReadOnly
-from social_media.serializers import ProfileListSerializer, ProfileDetailSerializer, ProfileSerializer, \
-    ProfilePicSerializer, PostSerializer, PostListSerializer, PostDetailSerializer, PostMediaSerializer, \
-    CommentSerializer, CommentListSerializer
+from social_media.serializers import (
+    ProfileListSerializer,
+    ProfileDetailSerializer,
+    ProfileSerializer,
+    ProfilePicSerializer,
+    PostSerializer,
+    PostListSerializer,
+    PostDetailSerializer,
+    PostMediaSerializer,
+    CommentSerializer,
+    CommentListSerializer,
+)
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -35,7 +44,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
 
         if displayed_name:
-            queryset = queryset.filter(displayed_name__icontains=displayed_name)
+            queryset = queryset.filter(
+                displayed_name__icontains=displayed_name
+            )
 
         return queryset.distinct()
 
@@ -69,7 +80,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
         url_path="follow",
     )
     @extend_schema(
-        responses={status.HTTP_200_OK: {"description": "Successfully followed"}},
+        responses={
+            status.HTTP_200_OK: {"description": "Successfully followed"}
+        },
         parameters=[
             OpenApiParameter(
                 name="pk",
@@ -86,7 +99,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
         request_user_profile = self.request.user.profile
         request_user_profile.follow(profile_to_follow.user)
 
-        return Response({"detail": "Successfully followed."}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Successfully followed."}, status=status.HTTP_200_OK
+        )
 
     @action(
         methods=["POST"],
@@ -94,7 +109,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
         url_path="unfollow",
     )
     @extend_schema(
-        responses={status.HTTP_200_OK: {"description": "Successfully unfollowed"}},
+        responses={
+            status.HTTP_200_OK: {"description": "Successfully unfollowed"}
+        },
         parameters=[
             OpenApiParameter(
                 name="pk",
@@ -116,9 +133,15 @@ class ProfileViewSet(viewsets.ModelViewSet):
                 followed=profile_to_unfollow.user,
             )
             follow_obj.delete()
-            return Response({"detail": "Successfully unfollowed."}, status=status.HTTP_200_OK)
+            return Response(
+                {"detail": "Successfully unfollowed."},
+                status=status.HTTP_200_OK,
+            )
         except Follow.DoesNotExist:
-            return Response({"detail": "You are not following this profile."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "You are not following this profile."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     @action(
         methods=["GET"],
@@ -134,12 +157,14 @@ class ProfileViewSet(viewsets.ModelViewSet):
                 location="header",
                 description="JWT Token",
             ),
-        ]
+        ],
     )
     def liked_posts(self, request, pk=None):
         """Endpoint for posts liked by current user"""
         user = self.request.user
-        liked_posts = Post.objects.filter(likes__user=user).order_by("-created_at")
+        liked_posts = Post.objects.filter(likes__user=user).order_by(
+            "-created_at"
+        )
         serializer = PostListSerializer(liked_posts, many=True)
         return Response(serializer.data)
 
@@ -159,7 +184,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.select_related("user").prefetch_related("likes")
-    permission_classes = [IsAuthenticated, ]
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get_queryset(self):
         """Retrieve post by hashtag"""
@@ -196,7 +223,7 @@ class PostViewSet(viewsets.ModelViewSet):
                 location="header",
                 description="JWT Token",
             ),
-        ]
+        ],
     )
     def upload_media(self, request, pk=None):
         """Endpoint for uploading image to post."""
@@ -223,7 +250,7 @@ class PostViewSet(viewsets.ModelViewSet):
                 location="header",
                 description="JWT Token",
             ),
-        ]
+        ],
     )
     def user_posts(self, request):
         """Endpoints for posts made by the current user"""
@@ -246,13 +273,17 @@ class PostViewSet(viewsets.ModelViewSet):
                 location="header",
                 description="JWT Token",
             ),
-        ]
+        ],
     )
     def following_posts(self, request):
         """Endpoint for posts made by users that the current user is following"""
         user = self.request.user
-        following_users = Follow.objects.filter(follower=user).values_list("followed", flat=True)
-        following_posts = Post.objects.filter(user__in=following_users).order_by("-created_at")
+        following_users = Follow.objects.filter(follower=user).values_list(
+            "followed", flat=True
+        )
+        following_posts = Post.objects.filter(
+            user__in=following_users
+        ).order_by("-created_at")
         serializer = PostListSerializer(following_posts, many=True)
         return Response(serializer.data)
 
@@ -274,7 +305,7 @@ class PostViewSet(viewsets.ModelViewSet):
                 location="header",
                 description="JWT Token",
             ),
-        ]
+        ],
     )
     def like_post(self, request, pk=None):
         """Endpoint for liking a post"""
@@ -283,9 +314,15 @@ class PostViewSet(viewsets.ModelViewSet):
 
         try:
             Like.objects.create(user=user, post=post)
-            return Response({"detail": "Post liked successfully."}, status=status.HTTP_200_OK)
+            return Response(
+                {"detail": "Post liked successfully."},
+                status=status.HTTP_200_OK,
+            )
         except IntegrityError:
-            return Response({"detail": "You have already liked this post."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "You have already liked this post."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     @action(
         methods=["POST"],
@@ -305,7 +342,7 @@ class PostViewSet(viewsets.ModelViewSet):
                 location="header",
                 description="JWT Token",
             ),
-        ]
+        ],
     )
     def unlike_post(self, request, pk=None):
         """Endpoint for unliking a post"""
@@ -315,9 +352,14 @@ class PostViewSet(viewsets.ModelViewSet):
         try:
             like_obj = Like.objects.get(user=request_user, post=post_to_unlike)
             like_obj.delete()
-            return Response({"detail": "Successfully unliked."}, status=status.HTTP_200_OK)
+            return Response(
+                {"detail": "Successfully unliked."}, status=status.HTTP_200_OK
+            )
         except Like.DoesNotExist:
-            return Response({"detail": "Post is not liked by the user."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Post is not liked by the user."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     @extend_schema(
         parameters=[
@@ -348,11 +390,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         post = get_object_or_404(Post, pk=post_id)
         serializer.save(user=self.request.user, post=post)
 
-    @action(
-        methods=["GET"],
-        detail=True,
-        url_path="comments"
-    )
+    @action(methods=["GET"], detail=True, url_path="comments")
     @extend_schema(
         responses={200: CommentListSerializer(many=True)},
         parameters=[
@@ -362,7 +400,7 @@ class CommentViewSet(viewsets.ModelViewSet):
                 location="header",
                 description="JWT Token",
             ),
-        ]
+        ],
     )
     def list_comments(self, request, pk=None):
         """Endpoint for retrieving comments on a post"""

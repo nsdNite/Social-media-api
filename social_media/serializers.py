@@ -8,26 +8,17 @@ from user.serializers import UserSerializer
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = (
-            "id",
-            "user",
-            "post",
-            "text",
-            "created_at"
-        )
+        fields = ("id", "user", "post", "text", "created_at")
 
 
 class CommentListSerializer(serializers.ModelSerializer):
-    profile_name = serializers.CharField(source="user.profile.displayed_name", read_only=True)
+    profile_name = serializers.CharField(
+        source="user.profile.displayed_name", read_only=True
+    )
 
     class Meta:
         model = Comment
-        fields = (
-            "id",
-            "profile_name",
-            "text",
-            "created_at"
-        )
+        fields = ("id", "profile_name", "text", "created_at")
 
 
 class ProfilePicSerializer(serializers.ModelSerializer):
@@ -53,23 +44,23 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class FollowingSerializer(serializers.ModelSerializer):
-    following = serializers.CharField(source="followed.profile.displayed_name", read_only=True)
+    following = serializers.CharField(
+        source="followed.profile.displayed_name", read_only=True
+    )
 
     class Meta:
         model = Follow
-        fields = (
-            "following",
-        )
+        fields = ("following",)
 
 
 class FollowersSerializer(serializers.ModelSerializer):
-    follower = serializers.CharField(source="follower.profile.displayed_name", read_only=True)
+    follower = serializers.CharField(
+        source="follower.profile.displayed_name", read_only=True
+    )
 
     class Meta:
         model = Follow
-        fields = (
-            "follower",
-        )
+        fields = ("follower",)
 
 
 class ProfileDetailSerializer(serializers.ModelSerializer):
@@ -143,7 +134,9 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class PostDetailSerializer(serializers.ModelSerializer):
-    profile_name = serializers.CharField(source="user.profile.displayed_name", read_only=True)
+    profile_name = serializers.CharField(
+        source="user.profile.displayed_name", read_only=True
+    )
     likes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
 
@@ -156,7 +149,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
             "media",
             "created_at",
             "likes_count",
-            "comments_count"
+            "comments_count",
         )
 
     def get_likes_count(self, obj):
@@ -169,7 +162,9 @@ class PostDetailSerializer(serializers.ModelSerializer):
 class PostListSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
-    profile_name = serializers.CharField(source="user.profile.displayed_name", read_only=True)
+    profile_name = serializers.CharField(
+        source="user.profile.displayed_name", read_only=True
+    )
 
     class Meta:
         model = Post
@@ -193,9 +188,4 @@ class PostListSerializer(serializers.ModelSerializer):
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
-        fields = (
-            "id",
-            "user",
-            "post",
-            "created_at"
-        )
+        fields = ("id", "user", "post", "created_at")
