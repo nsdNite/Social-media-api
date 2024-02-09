@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -15,6 +15,7 @@ from social_media.models import (
     Comment,
     ScheduledPost,
 )
+from social_media.pagination import ProfilePagination, PostPagination
 from social_media.permissions import IsOwnerOrReadOnly
 from social_media.serializers import (
     ProfileListSerializer,
@@ -35,6 +36,7 @@ from social_media.tasks import create_scheduled_post
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.select_related("user")
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+    pagination_class = ProfilePagination
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -195,9 +197,8 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.select_related("user").prefetch_related("likes")
-    permission_classes = [
-        IsAuthenticated,
-    ]
+    permission_classes = [IsAuthenticated,]
+    pagination_class = PostPagination
 
     def get_queryset(self):
         """Retrieve post by hashtag"""
