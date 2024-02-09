@@ -17,7 +17,5 @@ class Command(BaseCommand):
                 self.stdout.write("Waiting...")
                 sleep(1)
         self.stdout.write(
-            self.style.SUCCESS(
-                "Database has been successfully connected"
-            )
+            self.style.SUCCESS("Database has been successfully connected")
         )
