@@ -14,7 +14,7 @@ from social_media.serializers import ProfileListSerializer, ProfileDetailSeriali
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
-    queryset = Profile.objects.all()
+    queryset = Profile.objects.select_related("user")
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_serializer_class(self):
@@ -158,7 +158,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
+    queryset = Post.objects.select_related("user").prefetch_related("likes")
     permission_classes = [IsAuthenticated, ]
 
     def get_queryset(self):
@@ -340,7 +340,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         post_id = self.kwargs.get("post_pk")
         post = get_object_or_404(Post, pk=post_id)
-        queryset = Comment.objects.filter(post=post)
+        queryset = Comment.objects.filter(post=post).select_related("user")
         return queryset
 
     def perform_create(self, serializer):
@@ -367,6 +367,6 @@ class CommentViewSet(viewsets.ModelViewSet):
     def list_comments(self, request, pk=None):
         """Endpoint for retrieving comments on a post"""
         post = get_object_or_404(Post, pk=pk)
-        comments = post.comments.all()
+        comments = post.comments.select_related("user")
         serializer = CommentListSerializer(comments, many=True)
         return Response(serializer.data)
