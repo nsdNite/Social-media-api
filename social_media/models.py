@@ -128,3 +128,12 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.user.profile.displayed_name} on {self.post}"
+
+
+class ScheduledPost(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    content = models.TextField()
+    scheduled_time = models.DateTimeField()
+
+    def __str__(self):
+        return f"Scheduled post by {self.user} at {self.scheduled_time}"

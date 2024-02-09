@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from social_media.models import Profile, Follow, Post, Like, Comment
+from social_media.models import Profile, Follow, Post, Like, Comment, ScheduledPost
 
 from user.serializers import UserSerializer
 
@@ -189,3 +189,9 @@ class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
         fields = ("id", "user", "post", "created_at")
+
+
+class ScheduledPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScheduledPost
+        fields = ('id', 'user', 'content', 'scheduled_time')

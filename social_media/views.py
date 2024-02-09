@@ -1,12 +1,20 @@
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from social_media.models import Profile, Follow, Post, Like, Comment
+from social_media.models import (
+    Profile,
+    Follow,
+    Post,
+    Like,
+    Comment,
+    ScheduledPost,
+)
 from social_media.permissions import IsOwnerOrReadOnly
 from social_media.serializers import (
     ProfileListSerializer,
@@ -19,7 +27,9 @@ from social_media.serializers import (
     PostMediaSerializer,
     CommentSerializer,
     CommentListSerializer,
+    ScheduledPostSerializer,
 )
+from social_media.tasks import create_scheduled_post
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -173,7 +183,8 @@ class ProfileViewSet(viewsets.ModelViewSet):
             OpenApiParameter(
                 "displayed_name",
                 type=str,
-                description="Filter by displayed profile name (example ?displayed_name=User)",
+                description="Filter by displayed profile name "
+                "(example ?displayed_name=User)",
                 required=False,
             ),
         ]
@@ -276,7 +287,8 @@ class PostViewSet(viewsets.ModelViewSet):
         ],
     )
     def following_posts(self, request):
-        """Endpoint for posts made by users that the current user is following"""
+        """Endpoint for posts made by users
+        that the current user is following"""
         user = self.request.user
         following_users = Follow.objects.filter(follower=user).values_list(
             "followed", flat=True
@@ -408,3 +420,38 @@ class CommentViewSet(viewsets.ModelViewSet):
         comments = post.comments.select_related("user")
         serializer = CommentListSerializer(comments, many=True)
         return Response(serializer.data)
+
+
+class ScheduledPostViewSet(viewsets.ModelViewSet):
+    queryset = ScheduledPost.objects.all()
+    serializer_class = ScheduledPostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @action(
+        detail=True,
+        methods=["POST"]
+    )
+    def schedule_post(self, request, pk=None):
+        """Endpoint to schedule a post"""
+        scheduled_time = request.data.get("scheduled_time")
+        if not scheduled_time:
+            return Response(
+                {"error": "scheduled_time is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        scheduled_time = timezone.make_aware(scheduled_time)
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user, scheduled_time=scheduled_time)
+            create_scheduled_post.apply_async(
+                (request.user.id, serializer.data["content"], scheduled_time)
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
