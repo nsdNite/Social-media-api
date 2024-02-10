@@ -80,11 +80,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
         profile = self.get_object()
         serializer = self.get_serializer(profile, data=request.data)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
         methods=["POST"],
@@ -186,7 +184,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
                 "displayed_name",
                 type=str,
                 description="Filter by displayed profile name "
-                "(example ?displayed_name=User)",
+                            "(example ?displayed_name=User)",
                 required=False,
             ),
         ]
@@ -197,7 +195,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.select_related("user").prefetch_related("likes")
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated, ]
     pagination_class = PostPagination
 
     def get_queryset(self):
@@ -242,11 +240,9 @@ class PostViewSet(viewsets.ModelViewSet):
         profile = self.get_object()
         serializer = self.get_serializer(profile, data=request.data)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
         methods=["GET"],
@@ -446,13 +442,9 @@ class ScheduledPostViewSet(viewsets.ModelViewSet):
 
         scheduled_time = timezone.make_aware(scheduled_time)
         serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user, scheduled_time=scheduled_time)
-            create_scheduled_post.apply_async(
-                (request.user.id, serializer.data["content"], scheduled_time)
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user, scheduled_time=scheduled_time)
+        create_scheduled_post.apply_async(
+            (request.user.id, serializer.data["content"], scheduled_time)
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
