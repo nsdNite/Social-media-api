@@ -55,9 +55,7 @@ To access API with JWT token please install ModHeader extension:
 [ModHeader for Chrome](https://chromewebstore.google.com/detail/modheader-modify-http-hea/idgpnmonknjnojddfkpgkljpfnnfcklj)  
 [ModHeader for Firefox](https://addons.mozilla.org/uk/firefox/addon/modheader-firefox/)
 
-Click on extension, paste your JWT auth token with prefix word "bearer", e.g. on picture below.
-
-![mod.png](readme_media/mod.png)
-
+Click on extension, paste your JWT auth token with prefix word "bearer", e.g. on picture below.  
+![mod.png](readme_media/mod.png)  
 Select Authorization request header and check the box.
 You can now access other parts of API.
