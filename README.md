@@ -56,7 +56,6 @@ To access API with JWT token please install ModHeader extension:
 [ModHeader for Firefox](https://addons.mozilla.org/uk/firefox/addon/modheader-firefox/)
 
 Click on extension, paste your JWT auth token with prefix word "bearer", e.g. on picture below.  
-![modheader.png](readme_media%2Fmodheader.png)
-
+![mod.png](readme_media/mod.png)  
 Select Authorization request header and check the box.
 You can now access other parts of API.
